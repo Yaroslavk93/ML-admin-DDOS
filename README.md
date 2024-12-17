@@ -163,6 +163,21 @@ pd.Series(selected_features).to_csv("data/processed/selected_features.csv", inde
 python integration/app.py models/random_forest_model.pkl data/processed/new_data.csv
 
 
+Metric             Value
+iso_f1             0.5329110367551276
+iso_precision      0.6818937342422262
+iso_recall         0.4373558846957782
+iso_roc_auc        0.783035966845494
+rf_f1              0.9971119912281228
+rf_precision       0.9975303757785011
+rf_recall          0.9966939574886056
+rf_roc_auc         0.9997745114234884
+runtime_seconds    1404.5809271335602
+vae_f1             0.4851443379738444
+vae_precision      0.6536677459627896
+vae_recall         0.38570495966268786
+vae_roc_auc        0.7645058557897825
+
 
 Найденные аномалии:
    Packet Length Std  Avg Bwd Segment Size  Max Packet Length  ...  ACK Flag Count  Fwd IAT Max  OriginalLabel
@@ -174,3 +189,5 @@ python integration/app.py models/random_forest_model.pkl data/processed/new_data
 
 [5 rows x 31 columns]
 ```
+
+
