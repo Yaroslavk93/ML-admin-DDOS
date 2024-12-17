@@ -1,11 +1,14 @@
 # evaluation/visualization.py
 # ---------------------------------------------
-# Визуализация: ROC-кривые, гистограммы, boxplots и т.д.
+# Визуализация ROC-кривых
 # ---------------------------------------------
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve
 
 class Visualization:
+    """
+    Класс для визуализации результатов, например, построения ROC-кривой.
+    """
     @staticmethod
     def plot_roc(y_true, y_scores):
         fpr, tpr, _ = roc_curve(y_true, y_scores)

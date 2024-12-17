@@ -1,3 +1,4 @@
+### requirements.txt
 pandas
 numpy
 scikit-learn
@@ -5,3 +6,5 @@ matplotlib
 seaborn
 tensorflow
 joblib
+mlflow
+jupyter
