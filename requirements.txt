@@ -8,3 +8,19 @@ tensorflow
 joblib
 mlflow
 jupyter
+
+
+
+gpbackup \
+  --dbname dwh \
+  --plugin-config /home/gpadmin/gpconfigs/s3_backup.yaml \
+  --include-table ods.software_third_stavki \
+  --compression-type zstd \
+  --compression-level 5 \
+  --leaf-partition-data \
+  --jobs 6 \
+  --debug
+
+
+
+gpbackup   --dbname dwh   --plugin-config /home/gpadmin/gpconfigs/s3_backup.yaml   --compression-level 5   --compression-type zstd   --jobs 4   --verbose
