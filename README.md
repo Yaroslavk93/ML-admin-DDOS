@@ -1,40 +1,65 @@
-Проект: Обнаружение аномалий в сетевом трафике (CICIDS2017)
-Описание проекта: Данный проект предназначен для обнаружения аномалий в сетевом трафике с использованием датасета CICIDS2017 (https://www.unb.ca/cic/datasets/ids-2017.html).
-Используются методы глубокого обучения (автоэнкодер) и классические алгоритмы машинного обучения (IsolationForest, RandomForest).
+# Обнаружение аномалий в сетевом трафике (CICIDS2017)
 
-Цель проекта – сравнить различные подходы, оценить их эффективность и предоставить удобный интерфейс для анализа результатов и проведения инференса на новых данных.
+Данный проект нацелен на обнаружение аномалий в сетевом трафике с использованием датасета [CICIDS2017](https://www.unb.ca/cic/datasets/ids-2017.html). В нём реализованы несколько методов:
 
+- **Autoencoder** (Anomaly Detection): Позволяет выявлять неизвестные ранее атаки, обучаясь на нормальном трафике.
+- **Isolation Forest** (Unsupervised): Классический алгоритм выявления аномалий.
+- **Random Forest** (Supervised): Обучается на размеченных данных и показывает высокое качество на известных атаках, но менее эффективен против новых, неизвестных угроз.
+
+**Почему Anomaly Detection?**  
+Супервайзед методы (как Random Forest) показывают почти 100% качество на знакомых атаках, но их гибкость ограничена: новые атаки, не встречавшиеся при обучении, они не распознают. Anomaly Detection модели (Autoencoder, IsolationForest) более универсальны в реальной среде, где постоянно появляются новые типы атак.
+
+## Структура проекта
 ```
-Структура проекта: CICIDS2017_AnomalyDetection/
 CICIDS2017_AnomalyDetection/
-    ├── venv/                        # виртуальное окружение
-    ├── data/
-    │   ├── raw/                     # необработанные данные (CSV CICIDS2017)
-    │   └── processed/               # обработанные данные (после предобработки)
-    ├── models/
-    │   ├── autoencoder.py           # Модель автоэнкодера
-    │   ├── classic.py               # Классические модели: IsolationForest, RandomForest
-    │   └── __init__.py
-    ├── preprocessing/
-    │   ├── data_loader.py           # Загрузка данных CICIDS2017
-    │   ├── transform.py             # Предобработка данных (изменения здесь!)
-    │   └── __init__.py
-    ├── evaluation/
-    │   ├── metrics.py               # Метрики оценки
-    │   ├── visualization.py         # Визуализация результатов
-    │   └── __init__.py
-    ├── integration/
-    │   ├── app.py                   # Консольное приложение для инференса
-    │   ├── utils.py                 # Утилитные функции
-    │   └── __init__.py
-    ├── notebooks/
-    │   ├── EDA.ipynb                # Исследовательский анализ данных
-    │   ├── Model_Evaluation.ipynb   # Анализ результатов обучения моделей
-    │   └── __init__.py
-    ├── train.py                     # Основной скрипт обучения и оценки
-    ├── requirements.txt
-    └── README.md
+├─ venv/                 # виртуальное окружение
+├─ data/
+│  ├─ raw/               # сырые данные (CICIDS2017 CSV)
+│  └─ processed/          # предобработанные данные (X_train.csv, ...)
+├─ models/
+│  ├─ autoencoder_model.keras
+│  ├─ isolation_forest_model.pkl
+│  ├─ random_forest_model.pkl
+│  ├─ scaler.pkl
+│  └─ thresholds.json
+├─ notebooks/
+│  ├─ EDA.ipynb           # Исследовательский анализ данных
+│  ├─ Model_Evaluation.ipynb # Анализ результатов моделей
+├─ preprocessing/
+│  ├─ data_loader.py      # Загрузка исходных CSV
+│  ├─ transform.py        # Предобработка данных: заполнение пропусков, нормализация, отбор признаков
+├─ evaluation/
+│  ├─ metrics.py          # Метрики оценки: precision, recall, f1, roc-auc
+│  ├─ visualization.py     # Визуализация ROC-кривых
+├─ integration/
+│  ├─ app.py              # Консольное приложение для инференса
+│  ├─ utils.py
+├─ train.py               # Основной скрипт обучения и логирования экспериментов в MLflow
+├─ prepare_new_data_raw.py  # Генерация тестового набора для инференса (DDoS+BENIGN)
+├─ prepare_new_data.py     # Предобработка новых данных для инференса
+├─ requirements.txt
+└─ README.md              # Описание проекта
 ```
+
+- `data/raw/` — Исходные CSV файлы.
+- `data/processed/` — Обработанные данные (X_train, X_test, и т.п.).
+- `models/` — Сохранённые модели, scaler, thresholds.
+- `preprocessing/` — Код предобработки данных (transform, data_loader).
+- `evaluation/` — Метрики и визуализация.
+- `integration/` — Интеграционное приложение (app.py).
+- `notebooks/` — Jupyter ноутбуки для EDA и оценки моделей.
+- `mlruns/` — Логи MLflow экспериментов.
+
+
+1. Создать виртуальное окружение и установить зависимости:
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/Mac
+   venv\Scripts\activate      # Windows
+   pip install -r requirements.txt
+   ```
+
 
 Подготовка среды и запуск проекта:
 
@@ -63,40 +88,106 @@ python train.py
 jupyter notebook  
 Откройте notebooks/EDA.ipynb или Model_Evaluation.ipynb.
 
-
-Обучение модели:
+Для запуска mlflow, используем нижеприведённую команду и переходим по адресу http://127.0.0.1:5000
 ```bash
-python train.py
-2024-12-08 19:06:18.137706: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
-2024-12-08 19:06:18.938513: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
-2024-12-08 19:06:48.505784: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
-To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
-Epoch 1/5
-3480/3480 ━━━━━━━━━━━━━━━━━━━━ 5s 1ms/step - loss: 0.7413 - val_loss: 0.5977
-Epoch 2/5
-3480/3480 ━━━━━━━━━━━━━━━━━━━━ 4s 1ms/step - loss: 0.6513 - val_loss: 0.5964
-Epoch 3/5
-3480/3480 ━━━━━━━━━━━━━━━━━━━━ 4s 1ms/step - loss: 0.6272 - val_loss: 0.5960
-Epoch 4/5
-3480/3480 ━━━━━━━━━━━━━━━━━━━━ 4s 1ms/step - loss: 0.6361 - val_loss: 0.5959
-Epoch 5/5
-3480/3480 ━━━━━━━━━━━━━━━━━━━━ 4s 1ms/step - loss: 0.6255 - val_loss: 0.5956
-WARNING:absl:You are saving your model as an HDF5 file via `model.save()` or `keras.saving.save_model(model)`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')` or `keras.saving.save_model(model, 'my_model.keras')`.
-Autoencoder metrics: {'precision': np.float64(0.03531300160513644), 'recall': np.float64(0.0001317625638599244), 'f1': np.float64(0.0002625454979414046), 'roc_auc': np.float64(0.7227188357192318)}
-Isolation Forest metrics: {'precision': np.float64(0.4985070694651796), 'recall': np.float64(0.4079728329550151), 'f1': np.float64(0.448718919933731), 'roc_auc': np.float64(0.6826796367880535)}
-Random Forest metrics: {'precision': np.float64(0.9971094287680661), 'recall': np.float64(0.9978738313558967), 'f1': np.float64(0.9974914836168136), 'roc_auc': np.float64(0.9999214276325252)}
-Обучение завершено. Модели сохранены в папке models/.
+mlflow ui
 ```
-Проверка результатов на созданном датасете из исходных данных:
+
+(venv) C:\AnomalyDetection>python prepare_new_data_raw.py
+new_data_raw.csv создан, содержит 500 DDoS и 500 BENIGN.
+
+(venv) C:\AnomalyDetection>python prepare_new_data.py
+Новые данные подготовлены (new_data.csv) для инференса.
+
+Инференс новых данных
+Создайте new_data_raw.csv:
+bash
+Копировать код
+python prepare_new_data_raw.py
+Предобработайте их:
+bash
+Копировать код
+python prepare_new_data.py
+Запустите инференс:
+bash
+Копировать код
+python integration/app.py data/processed/new_data.csv
+Скрипт покажет, сколько аномалий нашел VAE и ISO.
+
+
+
+Описание дипломной работы  
+Цель дипломной работы: Создать систему обнаружения аномалий в сетевом трафике, способную выявлять неизвестные атаки без необходимости иметь обучающую выборку, помеченную всеми типами атак. Датасет CICIDS2017 содержит трафик с различными типами атак (DDoS, PortScan, Web Attacks и др.), а также большой объем нормального трафика.  
+  
+Основная идея:  
+Использовать anomaly detection подходы (VAE, ISO), которые учатся на нормальных данных и затем выявляют аномалии по степени отклонения от нормы. Сравнить с RandomForest, который требует меток атак, чтобы понять верхний предел качества при известной разметке.  
+  
+Результаты:  
+  
+RandomForest: Почти идеальные метрики (F1>0.99, ROC-AUC>0.999), но это при условии знания меток.  
+Без дополнительных улучшений VAE и ISO давали ~0.40 F1 и ~0.70 ROC-AUC.  
+После отбор признаков и настройки параметров F1 для ISO вырос до ~0.53, VAE до ~0.48–0.49 F1, ROC-AUC ~0.76–0.78.  
+Это улучшение подтверждает, что уменьшение размерности и отбор информативных признаков помогает anomaly detection методам.
+Почему такой подход:  
+
+В реальных сценариях атак могут быть новые типы, не встречавшиеся в обучении. Супервайзед методы, как RandomForest, не обнаружат новые атаки.  
+VAE и ISO способны зафиксировать "нормальный профиль" и сигнализировать о любых отклонениях. Это даёт преимущество при появлении новых, неизвестных угроз.  
+Источники:  
+
+CICIDS2017: https://www.unb.ca/cic/datasets/ids-2017.html  
+VAE: D. P. Kingma, M. Welling. "Auto-Encoding Variational Bayes." ICLR, 2014.  
+Isolation Forest: Liu et al., "Isolation Forest", ICDM 2008.  
+RandomForest: L. Breiman "Random Forests", Machine Learning, 2001.  
+Анализ:  
+
+Результаты показывают, что anomaly detection (VAE, ISO) сложнее повысить до уровня супервайзед методов без меток.
+Но достигнутый прогресс (F1 ~0.53 у ISO вместо 0.40) важен, так как в реальных условиях часто не хватает данных о новых атаках.  
+Будущее улучшение — использование более продвинутых архитектур (например, GAN-based anomaly detection), более тщательно тюнинговать гиперпараметры (Optuna), другие типы нормализации, а также рассмотреть временную корреляцию более глубоко, если она присутствует.  
+
+
+
+
+
+
+Проблема - файл selected_features.csv содержит лишнюю строку '0' в начале. Это происходит из-за того, что при сохранении pd.Series(selected_features) по умолчанию добавляет имя серии или заголовок.
+
+# train.py
+# ...
+pd.Series(selected_features).to_csv("data/processed/selected_features.csv", index=False, header=False)
+# ...
+
+
+проверка результата:
+
 ```bash
 python integration/app.py models/random_forest_model.pkl data/processed/new_data.csv
-Найденные аномалии:
-   Destination Port  Flow Duration  Total Fwd Packets  Total Backward Packets  ...      Idle Std      Idle Max      Idle Min  OriginalLabel
-0              80.0      4047917.0                5.0            6.217249e-14  ...  3.492460e-10  1.862645e-09  1.862645e-09           DDos
-1              80.0      5997859.0                5.0            6.217249e-14  ...  3.492460e-10  5.995860e+06  5.995860e+06           DDoS
-2              80.0      1806469.0                3.0            6.000000e+00  ...  3.492460e-10  1.862645e-09  1.862645e-09           DDoS
-3              80.0      2234959.0                4.0            6.217249e-14  ...  3.492460e-10  1.862645e-09  1.862645e-09           DDoS
-4              80.0       872466.0                2.0            6.000000e+00  ...  3.492460e-10  1.862645e-09  1.862645e-09           DDoS
 
-[5 rows x 79 columns]
+
+Metric             Value
+iso_f1             0.5329110367551276
+iso_precision      0.6818937342422262
+iso_recall         0.4373558846957782
+iso_roc_auc        0.783035966845494
+rf_f1              0.9971119912281228
+rf_precision       0.9975303757785011
+rf_recall          0.9966939574886056
+rf_roc_auc         0.9997745114234884
+runtime_seconds    1404.5809271335602
+vae_f1             0.4851443379738444
+vae_precision      0.6536677459627896
+vae_recall         0.38570495966268786
+vae_roc_auc        0.7645058557897825
+
+
+Найденные аномалии:
+   Packet Length Std  Avg Bwd Segment Size  Max Packet Length  ...  ACK Flag Count  Fwd IAT Max  OriginalLabel
+0           0.475643              0.400207           0.290693  ...             1.0     0.050629  OriginalLabel
+1           0.539818              0.400207           0.235294  ...             0.0     0.000005           DDoS
+2           0.516043              0.400000           0.290693  ...             0.0     0.000092           DDoS
+3           0.000000              0.000000           0.000242  ...             1.0     0.069367           DDoS
+4           0.000000              0.000000           0.000242  ...             1.0     0.016985           DDoS
+
+[5 rows x 31 columns]
 ```
+
+

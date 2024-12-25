@@ -23,7 +23,11 @@ Thumbs.db
 # Модели и большие бинарные файлы, если не хотите их хранить в репозитории
 models/*.h5
 models/*.pkl
+models/*.json
+models/*.keras
 
 #Датасеты
 data/processed/*.csv
 data/raw/*.csv
+
+mlruns/
